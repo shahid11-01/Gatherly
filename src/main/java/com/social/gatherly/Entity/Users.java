@@ -9,16 +9,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "Users")
+@Table(name = "users")
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long userId;
+    private Long userId;
 
     @Column(name = "user_name", columnDefinition = "CHAR(100)", nullable = false, length = 100)
     private String userName;
@@ -44,8 +46,15 @@ public class Users {
     @Column(nullable = false)
     private Role role;
 
-    @Column(nullable = false)
+    @Column(name="modified_at", columnDefinition="DATETIME", updatable = false)
     private LocalDateTime modifiedAt;
+
+    @OneToMany(mappedBy = "user")
+    private List<Event> events = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<EventParticipant> participants = new ArrayList<>();
+
 
 
 
