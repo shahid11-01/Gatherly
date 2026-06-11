@@ -49,8 +49,8 @@ public class Users {
     @Column(name="modified_at", columnDefinition="DATETIME", updatable = false)
     private LocalDateTime modifiedAt;
 
-    @OneToMany(mappedBy = "user")
-    private List<Event> events = new ArrayList<>();
+    @OneToMany(mappedBy = "host")
+    private List<Event> hostedEvents = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<EventParticipant> participants = new ArrayList<>();

@@ -28,8 +28,11 @@ public class Event {
     @Column(name= "description",columnDefinition = "TEXT", nullable = false)
     private String description;
 
-    @Column(name="event_date", columnDefinition = "DATE", updatable = false)
-    private LocalDate eventDate;
+    @Column(name="start_date", nullable = false)
+    private LocalDateTime startDate;
+
+    @Column(name="end_date", nullable = false)
+    private LocalDateTime endDate;
 
     @Column(name="max_participants",columnDefinition = "Integer", nullable = false)
     private int maxParticipants = 0;
@@ -39,8 +42,8 @@ public class Event {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    @JoinColumn(name = "host_id", nullable = false)
+    private Users host;
 
     @OneToMany(mappedBy = "event")
     private List<EventParticipant> participants = new ArrayList<>();
