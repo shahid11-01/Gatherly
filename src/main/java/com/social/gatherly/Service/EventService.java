@@ -1,11 +1,16 @@
 package com.social.gatherly.Service;
 
 
+import com.social.gatherly.Configuration.GlobalConfig;
 import com.social.gatherly.Dto.EventAllResponse;
+import com.social.gatherly.Dto.EventImageResponse;
 import com.social.gatherly.Dto.EventRequestDto;
 import com.social.gatherly.Dto.EventResponseDto;
 import com.social.gatherly.Entity.Event;
+import com.social.gatherly.Entity.EventImageEntity;
 import com.social.gatherly.Entity.Users;
+import com.social.gatherly.Enum.ImageType;
+import com.social.gatherly.Repository.EventImageRepository;
 import com.social.gatherly.Repository.EventRepository;
 import com.social.gatherly.Repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +18,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -21,9 +29,12 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final UsersRepository usersRepository;
+    private final ImageService imageService;
+    private final EventImageRepository eventImageRepository;
+    private final GlobalConfig globalConfig;
 
 
-    public void createEvent(EventRequestDto eventRequestDto, Long userId) {
+    public Long createEvent(EventRequestDto eventRequestDto, Long userId) {
         Users host = usersRepository.findById(userId).orElseThrow(()
                 -> new RuntimeException("유저가 없습니다"));
         if(eventRequestDto.getEndDate().isBefore(eventRequestDto.getStartDate())) {
@@ -36,7 +47,8 @@ public class EventService {
         events.setEndDate(eventRequestDto.getEndDate());
         events.setMaxParticipants(eventRequestDto.getMaxParticipants());
         events.setHost(host);
-        eventRepository.save(events);
+        Event savedEvent = eventRepository.save(events);
+        return savedEvent.getEventId();
 
     }
 
@@ -44,7 +56,7 @@ public class EventService {
         Event updatedEvent = eventRepository.findById(eventId)
                         .orElseThrow(() -> new RuntimeException("이벤트가 없습니다"));
 
-        if(eventRequestDto.getEndDate().isBefore(updatedEvent.getStartDate())) {
+        if(eventRequestDto.getEndDate().isBefore(eventRequestDto.getStartDate())) {
             throw new IllegalArgumentException("종료일은 시작일보다 빠를 수 없습니다");
         }
 
@@ -63,6 +75,11 @@ public class EventService {
 
 
     public void deleteEvent(Long eventId, Long userId) {
+        Event event = eventRepository.findById(eventId)
+                        .orElseThrow(() -> new RuntimeException("이벤트가 없습니다"));
+        if(!event.getHost().getUserId().equals(userId)) {
+            throw new RuntimeException("권한 없음");
+        }
         eventRepository.deleteById(eventId);
     }
 
@@ -86,6 +103,31 @@ public class EventService {
                 .totalPages(events.getTotalPages())
                 .last(events.isLast())
                 .build();
+    }
+
+    public List<EventImageResponse> eventImageUpload(Long eventId, List<MultipartFile> images) throws IOException {
+        Event events = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("이벤트가 없습니다"));
+        if(images.isEmpty()) {
+            throw new IOException("이미지가 없습니다");
+        }
+
+        //파일 저장 + URL 경로 리스트 받기
+        List<String> filePathList = imageService.eventImageUpload(events, images,ImageType.EVENT);
+
+        //DB에 EventImageEntity로 저장
+        List<EventImageEntity> entites = filePathList.stream()
+                .map(filePath -> new EventImageEntity(null, events, filePath))
+                .toList();
+        List<EventImageEntity> savedEntities = eventImageRepository.saveAll(entites);
+
+        // 응답 저장
+        return savedEntities.stream()
+                .map(entity -> EventImageResponse.builder()
+                        .id(entity.getEventImageId())
+                        .url(globalConfig.getDomain() + entity.getEventImageUrl())
+                        .build())
+                .toList();
     }
 
 

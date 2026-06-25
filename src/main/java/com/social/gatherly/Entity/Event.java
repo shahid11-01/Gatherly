@@ -41,6 +41,11 @@ public class Event {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    //이벤트 이미지 리스트
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventImageEntity>imageList = new ArrayList<>();
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "host_id", nullable = false)
     private Users host;
