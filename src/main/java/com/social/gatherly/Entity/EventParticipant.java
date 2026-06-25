@@ -28,7 +28,7 @@ public class EventParticipant {
     @Column(name="requested_at", nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime requestedAt;
 
-    @Column(name = "approved_at", nullable = false, columnDefinition = "DATETIME")
+    @Column(name = "approved_at", nullable = true, columnDefinition = "DATETIME")
     private LocalDateTime approvedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

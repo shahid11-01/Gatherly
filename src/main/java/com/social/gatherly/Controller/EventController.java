@@ -9,6 +9,7 @@ import com.social.gatherly.Entity.Users;
 import com.social.gatherly.Enum.ImageType;
 import com.social.gatherly.Service.EventService;
 import com.social.gatherly.Service.ImageService;
+import com.social.gatherly.Service.UserAuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +28,13 @@ public class EventController {
 
     private final EventService eventService;
     private final ImageService imageService;
+    private final UserAuthService userAuthService;
 
     @PostMapping("/events")
     public ResponseEntity<Long> createEvent(@RequestBody EventRequestDto eventRequestDto,
-                                            @AuthenticationPrincipal Users user) {
+                                            @RequestHeader("Authorization") String authHeader) {
+        //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
+        Users user =  userAuthService.getAuthenticatedUser(authHeader);
         Long eventId = eventService.createEvent(eventRequestDto, user.getUserId());
         return ResponseEntity.ok(eventId);
     }
@@ -47,15 +51,19 @@ public class EventController {
 
     @PutMapping("/updateEvents")
     public ResponseEntity<Void> updateEvent(@RequestBody EventRequestDto eventRequestDto,
-                                            @AuthenticationPrincipal Users user,
+                                            @RequestHeader("Authorization") String authHeader,
                                             @RequestParam  Long eventId) {
+        //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
+        Users user = userAuthService.getAuthenticatedUser(authHeader);
         eventService.updateEvent(eventRequestDto, user.getUserId(), eventId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{eventId}/events")
-    public ResponseEntity<Void> deleteEvent(@AuthenticationPrincipal Users user,
-                                            @PathVariable Long eventId) {
+    public ResponseEntity<Void> deleteEvent(@PathVariable Long eventId,
+                                            @RequestHeader("Authorization") String authHeader){
+        //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
+        Users user = userAuthService.getAuthenticatedUser(authHeader);
         eventService.deleteEvent(eventId, user.getUserId());
         return ResponseEntity.ok().build();
     }
