@@ -1,8 +1,10 @@
 package com.social.gatherly.Controller;
 
 
+import com.social.gatherly.Dto.EventAllResponse;
 import com.social.gatherly.Dto.EventImageResponse;
 import com.social.gatherly.Dto.EventRequestDto;
+import com.social.gatherly.Dto.EventResponseDto;
 import com.social.gatherly.Entity.Event;
 import com.social.gatherly.Entity.EventImageEntity;
 import com.social.gatherly.Entity.Users;
@@ -66,6 +68,15 @@ public class EventController {
         Users user = userAuthService.getAuthenticatedUser(authHeader);
         eventService.deleteEvent(eventId, user.getUserId());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/eventAll{page}")
+    public EventAllResponse<EventResponseDto> getAllEvent(
+            @PathVariable Integer page
+    ) {
+
+        return eventService.getEvents(page);
+
     }
 
     
