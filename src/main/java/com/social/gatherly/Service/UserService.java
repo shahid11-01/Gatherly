@@ -2,9 +2,7 @@ package com.social.gatherly.Service;
 
 
 import com.social.gatherly.Configuration.JwtTokenProvider;
-import com.social.gatherly.Dto.LoginRequestDto;
-import com.social.gatherly.Dto.SignUpRequestDto;
-import com.social.gatherly.Dto.UpdateUserRequest;
+import com.social.gatherly.Dto.*;
 import com.social.gatherly.Entity.Users;
 import com.social.gatherly.Enum.Provider;
 import com.social.gatherly.Enum.Role;
@@ -16,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -44,26 +43,50 @@ public class UserService {
         usersRepository.save(user);
     }
 
+    @Transactional
     public void updateUser(UpdateUserRequest updateUserRequest, Long userId) {
         Users user = usersRepository.findById(userId).orElseThrow(()
                 -> new RuntimeException("유저가 없습니다"));
+
         if(!user.getProvider().equals(Provider.LOCAL)) {
             throw new RuntimeException("라헬론 계정만 요청 가능합니다");
         }
-        Users updatedUser = new Users();
-        updatedUser.setUserName(updateUserRequest.getUserName());
-        updatedUser.setEmail(updateUserRequest.getEmail());
-        updatedUser.setPassword(passwordEncoder.encode(updateUserRequest.getPassword()));
-        usersRepository.save(updatedUser);
+        //이메일 중복 체크
+        if(!user.getEmail().equals(updateUserRequest.getEmail())
+            && usersRepository.existsByEmail(updateUserRequest.getEmail())) {
+            throw new RuntimeException("이미 사용중인 이메일입니다");
+
+        }
+        user.setUserName(updateUserRequest.getUserName());
+        user.setEmail(updateUserRequest.getEmail());
+        usersRepository.save(user);
     }
 
+    //비밀번호를 체크하고 + 바꾸기
+    @Transactional
+    public void changePassword(ChangePasswordRequest request, Long userId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저가 없습니다"));
 
+        if(!user.getProvider().equals(Provider.LOCAL)) {
+            throw new RuntimeException("로컬 계정만 요청 가능합니다");
+        }
+
+        if(!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("현재 비밀번호가 일치하지 않습니다");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        usersRepository.save(user);
+    }
+
+    // 비밀번호가 맞는지 체크
     public String confirmPassword(String password, Long userId ) {
         if(password == null) {
             throw new RuntimeException("비밀번호가 누락되었습니다");
         }
 
-        Users user = usersRepository.findById(userId).orElse(null);
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저가 없습니다"));
 
         if(!user.getProvider().equals(Provider.LOCAL)) {
             throw new RuntimeException("Gatherly 계정만 요청 가능합니다");
