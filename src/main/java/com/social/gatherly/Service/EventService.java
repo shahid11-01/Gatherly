@@ -62,7 +62,7 @@ public class EventService {
 
 
         if(!updatedEvent.getHost().getUserId().equals(userId)) {
-            throw new RuntimeException("권한 없음");
+            throw new RuntimeException("권한 없습니다");
         }
         updatedEvent.setTitle(eventRequestDto.getTitle());
         updatedEvent.setDescription(eventRequestDto.getDescription());

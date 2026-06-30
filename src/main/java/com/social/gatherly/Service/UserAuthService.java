@@ -29,4 +29,6 @@ public class UserAuthService {
                 .orElseThrow(() -> new IllegalArgumentException("인증된 유저:" + userEmail + ")를 찾을 수 없습니다"));
     }
 
+
+
 }
