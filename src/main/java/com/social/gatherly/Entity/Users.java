@@ -39,7 +39,7 @@ public class Users {
     @Column(nullable = false)
     private Provider provider;
 
-    @Column(unique = true)
+    @Column(name = "provider_id", unique = true, length = 100)
     private String providerId;
 
     @Enumerated(EnumType.STRING)

@@ -37,7 +37,8 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**").
+                        .requestMatchers("/api/auth/**",
+                                         "/api/kakao/**").
                         permitAll()
                         .anyRequest().authenticated()
                 )
