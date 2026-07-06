@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/kakao")
 @RequiredArgsConstructor
 public class KakaoController {
-    private final KakaoController kakaoController;
     private final KakaoAuthService kakaoAuthService;
 
     @PostMapping("/login")

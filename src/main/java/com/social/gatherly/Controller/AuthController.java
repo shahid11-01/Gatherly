@@ -1,8 +1,11 @@
 package com.social.gatherly.Controller;
 
 
+import com.social.gatherly.Configuration.JwtTokenProvider;
 import com.social.gatherly.Dto.*;
 import com.social.gatherly.Entity.Users;
+import com.social.gatherly.Service.RefreshTokenService;
+import com.social.gatherly.Service.TokenService;
 import com.social.gatherly.Service.UserAuthService;
 import com.social.gatherly.Service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,9 @@ public class AuthController {
 
     private final UserService userService;
     private final UserAuthService userAuthService;
+    private final TokenService tokenService;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/signup")
     public ResponseEntity<String> register(@RequestBody SignUpRequestDto register) {
@@ -26,8 +32,8 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<AuthResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
-        String token = userService.loginUser(loginRequestDto);
-        return ResponseEntity.ok(new AuthResponseDto(token,  "로그인 성공했어요"));
+        AuthResponseDto authResponseDto = userService.loginUser(loginRequestDto);
+        return ResponseEntity.ok().body(authResponseDto);
     }
 
     @PutMapping("/update")
@@ -58,5 +64,20 @@ public class AuthController {
         String result = userService.confirmPassword(userPasswordVerifyRequest.getPassword(), user.getUserId());
         return ResponseEntity.ok().body(result);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+         String newAccessToken = refreshTokenService.refresh(refreshTokenRequest);
+         return ResponseEntity.ok(newAccessToken);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
+            refreshTokenService.logout(request.getRefreshToken());
+            return ResponseEntity.ok().build();
+    }
+
+
+
 
 }

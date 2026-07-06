@@ -27,6 +27,8 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserAuthService userAuthService;
+    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
 
     public void signUp(SignUpRequestDto signUpRequestDto) {
         if( usersRepository.findByEmail(signUpRequestDto.getEmail()).isPresent()) {
@@ -102,7 +104,7 @@ public class UserService {
 }
 
 
-    public String loginUser(LoginRequestDto loginRequestDto) {
+    public AuthResponseDto loginUser(LoginRequestDto loginRequestDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequestDto.getEmail(),
@@ -111,6 +113,11 @@ public class UserService {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return jwtTokenProvider.generateToken(authentication.getName());
+
+
+        return tokenService.generateTokens(
+                authentication.getName(),
+                "Login successful"
+        );
     }
 }

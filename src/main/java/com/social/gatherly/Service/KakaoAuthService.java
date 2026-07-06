@@ -45,6 +45,8 @@ public class KakaoAuthService {
     private final KakaoProperties kakaoProperties;
     private  final UsersRepository usersRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
 
     public AuthResponseDto login(String authorizationCode){
         //Authorization Code - > Access Token
@@ -53,15 +55,11 @@ public class KakaoAuthService {
         KakaoUserResponse kakaoUserResponse = getUserInfo(tokenResponse.getAccessToken());
         //User 확인
         Users user = findOrCreateUser(kakaoUserResponse);
-        //JWT 생성
-        String jwt = jwtTokenProvider.generateToken(user.getEmail());
 
-        //response
-        return new AuthResponseDto(
-                jwt,
-                "KakaoLogin is successful"
+        return tokenService.generateTokens(
+                user.getEmail(),
+                "Kakao Login Successful"
         );
-
     }
 
     private KakaoTokenResponse getAccessToken(String authorizationCode) {

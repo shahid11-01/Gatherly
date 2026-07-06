@@ -16,11 +16,28 @@ import java.util.function.Function;
 public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
-
+    //Access Token 만료 시간
     @Value("${jwt.expiration}")
     private long expirationTime;
 
-    public String generateToken(String subject) {
+    //Refresh Token 만료 시간
+    @Value("${jwt.refresh-expiration}")
+    private long refreshTokenExpiration;
+
+
+    //AccessToken 생성
+    public String generateAccessToken(String email) {
+        return  generateToken(email,expirationTime);
+    }
+
+    //RefreshToken 생성
+    public String generateRefreshToken(String email) {
+        return generateToken(email, refreshTokenExpiration);
+    }
+
+
+    //공통 JWT 생성 메서드
+    public String generateToken(String subject, long expirationTime) {
         Date now = new Date(); //현재 시간
         Date expiryDate = new Date(now.getTime() + expirationTime); //만료 시간
 
@@ -38,7 +55,7 @@ public class JwtTokenProvider {
     }
 
 
-    //토큰 검증
+    //토큰(JWT) 검증
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().
@@ -49,6 +66,11 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    //Refresh Token
+    public long getRefreshExpiration() {
+        return  refreshTokenExpiration;
     }
 
     private <T> T getClaimFromToken(String token, Function<Claims,T> claimsResolver) {
