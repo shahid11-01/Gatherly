@@ -10,6 +10,8 @@ import com.social.gatherly.Entity.Event;
 import com.social.gatherly.Entity.EventImageEntity;
 import com.social.gatherly.Entity.Users;
 import com.social.gatherly.Enum.ImageType;
+import com.social.gatherly.Exception.EventNotFoundException;
+import com.social.gatherly.Exception.UserNotFoundException;
 import com.social.gatherly.Repository.EventImageRepository;
 import com.social.gatherly.Repository.EventRepository;
 import com.social.gatherly.Repository.UsersRepository;
@@ -36,7 +38,7 @@ public class EventService {
 
     public Long createEvent(EventRequestDto eventRequestDto, Long userId) {
         Users host = usersRepository.findById(userId).orElseThrow(()
-                -> new RuntimeException("유저가 없습니다"));
+                -> new UserNotFoundException("유저가 없습니다"));
         if(eventRequestDto.getEndDate().isBefore(eventRequestDto.getStartDate())) {
             throw new IllegalArgumentException("종료일은 시작일보다 빠를 수 없습니다");
         }
@@ -54,7 +56,7 @@ public class EventService {
 
     public void updateEvent(EventRequestDto eventRequestDto, Long userId, Long eventId) {
         Event updatedEvent = eventRepository.findById(eventId)
-                        .orElseThrow(() -> new RuntimeException("이벤트가 없습니다"));
+                        .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
 
         if(eventRequestDto.getEndDate().isBefore(eventRequestDto.getStartDate())) {
             throw new IllegalArgumentException("종료일은 시작일보다 빠를 수 없습니다");
@@ -62,7 +64,7 @@ public class EventService {
 
 
         if(!updatedEvent.getHost().getUserId().equals(userId)) {
-            throw new RuntimeException("권한 없습니다");
+            throw new IllegalArgumentException("권한 없습니다");
         }
         updatedEvent.setTitle(eventRequestDto.getTitle());
         updatedEvent.setDescription(eventRequestDto.getDescription());
@@ -76,9 +78,9 @@ public class EventService {
 
     public void deleteEvent(Long eventId, Long userId) {
         Event event = eventRepository.findById(eventId)
-                        .orElseThrow(() -> new RuntimeException("이벤트가 없습니다"));
+                        .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
         if(!event.getHost().getUserId().equals(userId)) {
-            throw new RuntimeException("권한 없음");
+            throw new IllegalArgumentException("권한 없습니다");
         }
         eventRepository.deleteById(eventId);
     }
@@ -107,7 +109,7 @@ public class EventService {
 
     public List<EventImageResponse> eventImageUpload(Long eventId, List<MultipartFile> images) throws IOException {
         Event events = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("이벤트가 없습니다"));
+                .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
         if(images.isEmpty()) {
             throw new IOException("이미지가 없습니다");
         }

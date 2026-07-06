@@ -2,6 +2,7 @@ package com.social.gatherly.Service;
 
 import com.social.gatherly.Configuration.JwtTokenProvider;
 import com.social.gatherly.Dto.RefreshTokenRequest;
+import com.social.gatherly.Exception.InvalidRefreshTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -55,11 +56,11 @@ public class RefreshTokenService {
         //Redis에 Refresh Token 없는 경우
 
         if(savedRefreshToken == null) {
-            throw new IllegalArgumentException("Refresh Token이 존제하지 않습니다");
+            throw new InvalidRefreshTokenException("Refresh Token이 존제하지 않습니다");
         }
         //Refresh Token 비교
         if(!savedRefreshToken.equals(refreshTokenRequest.getRefreshToken())) {
-            throw new IllegalArgumentException("Refresh Token이 일치하지 않습니다");
+            throw new InvalidRefreshTokenException("Refresh Token이 일치하지 않습니다");
         }
         //새로운 Access Token 발급
         return jwtTokenProvider.generateAccessToken(email);

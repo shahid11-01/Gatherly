@@ -3,6 +3,8 @@ package com.social.gatherly.Service;
 
 
 import com.social.gatherly.Entity.Users;
+import com.social.gatherly.Exception.DuplicateEmailException;
+import com.social.gatherly.Exception.UserNotFoundException;
 import com.social.gatherly.Repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,9 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UsersRepository usersRepository;
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws DuplicateEmailException {
         Users user = usersRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("유저를 찾을 수 없습니다"));
+                .orElseThrow(() -> new DuplicateEmailException(email));
+
 
         //인증 전용 객체
          return new org.springframework.security.core.userdetails.User(

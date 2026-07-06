@@ -3,6 +3,8 @@ package com.social.gatherly.Service;
 
 import com.social.gatherly.Configuration.JwtTokenProvider;
 import com.social.gatherly.Entity.Users;
+import com.social.gatherly.Exception.InvalidRefreshTokenException;
+import com.social.gatherly.Exception.UserNotFoundException;
 import com.social.gatherly.Repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +20,7 @@ public class UserAuthService {
         if(authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7).trim();
         }
-        throw new IllegalArgumentException("토큰이 없습니다");
+        throw new InvalidRefreshTokenException("토큰이 없습니다");
     }
 
     public Users getAuthenticatedUser(String autHeader) {
@@ -26,7 +28,7 @@ public class UserAuthService {
         String userEmail = jwtTokenProvider.getEmailFromToken(token);
 
         return usersRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("인증된 유저:" + userEmail + ")를 찾을 수 없습니다"));
+                .orElseThrow(() -> new UserNotFoundException("인증된 유저:" + userEmail + ")를 찾을 수 없습니다"));
     }
 
 

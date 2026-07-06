@@ -6,6 +6,8 @@ import com.social.gatherly.Dto.*;
 import com.social.gatherly.Entity.Users;
 import com.social.gatherly.Enum.Provider;
 import com.social.gatherly.Enum.Role;
+import com.social.gatherly.Exception.DuplicateEmailException;
+import com.social.gatherly.Exception.UserNotFoundException;
 import com.social.gatherly.Repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,7 +34,7 @@ public class UserService {
 
     public void signUp(SignUpRequestDto signUpRequestDto) {
         if( usersRepository.findByEmail(signUpRequestDto.getEmail()).isPresent()) {
-            throw new RuntimeException("이미 존재한 이메일입니다");
+            throw new DuplicateEmailException("이미 존재한 이메일입니다");
         }
         Users user = new Users();
         user.setUserName(signUpRequestDto.getUserName());
@@ -48,15 +50,15 @@ public class UserService {
     @Transactional
     public void updateUser(UpdateUserRequest updateUserRequest, Long userId) {
         Users user = usersRepository.findById(userId).orElseThrow(()
-                -> new RuntimeException("유저가 없습니다"));
+                -> new UserNotFoundException("유저가 없습니다"));
 
         if(!user.getProvider().equals(Provider.LOCAL)) {
-            throw new RuntimeException("라헬론 계정만 요청 가능합니다");
+            throw new RuntimeException("로컬 계정만 요청 가능합니다");
         }
         //이메일 중복 체크
         if(!user.getEmail().equals(updateUserRequest.getEmail())
             && usersRepository.existsByEmail(updateUserRequest.getEmail())) {
-            throw new RuntimeException("이미 사용중인 이메일입니다");
+            throw new DuplicateEmailException("이미 사용중인 이메일입니다");
 
         }
         user.setUserName(updateUserRequest.getUserName());
@@ -68,7 +70,7 @@ public class UserService {
     @Transactional
     public void changePassword(ChangePasswordRequest request, Long userId) {
         Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저가 없습니다"));
+                .orElseThrow(() -> new UserNotFoundException("유저가 없습니다"));
 
         if(!user.getProvider().equals(Provider.LOCAL)) {
             throw new RuntimeException("로컬 계정만 요청 가능합니다");
@@ -88,10 +90,10 @@ public class UserService {
         }
 
         Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저가 없습니다"));
+                .orElseThrow(() -> new UserNotFoundException("유저가 없습니다"));
 
         if(!user.getProvider().equals(Provider.LOCAL)) {
-            throw new RuntimeException("Gatherly 계정만 요청 가능합니다");
+            throw new RuntimeException("로컬 계정만 요청 가능합니다");
         }
 
         if (passwordEncoder.matches(password, user.getPassword())) {
