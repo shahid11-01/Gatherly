@@ -24,7 +24,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/event")
 @RequiredArgsConstructor
 public class EventController {
 
@@ -32,7 +32,7 @@ public class EventController {
     private final ImageService imageService;
     private final UserAuthService userAuthService;
 
-    @PostMapping("/events")
+    @PostMapping("/create")
     public ResponseEntity<Long> createEvent(@RequestBody EventRequestDto eventRequestDto,
                                             @RequestHeader("Authorization") String authHeader) {
         //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
