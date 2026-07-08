@@ -35,8 +35,8 @@ public class EventParticipantService {
 
         //유저가 전에 요청하는지 안 하는지 확인
         boolean alreadyRequested = eventParticipantRepository.
-                existsByUserUserIdAndEventEventId(userId,eventId);
-        if(alreadyRequested) {
+                existsByUserUserIdAndEventEventId(userId, eventId);
+        if (alreadyRequested) {
             throw new IllegalArgumentException("이미 요청한 유저입니다");
         }
         EventParticipant joinedParticipant = new EventParticipant();
@@ -59,13 +59,13 @@ public class EventParticipantService {
                 -> new EventNotFoundException("이벤트가 없습니다"));
         //호스트 체크
         if (!event.getHost().getUserId().equals(hostId)) {
-            throw  new UserNotFoundException("호스트가 아닙니다");
+            throw new UserNotFoundException("호스트가 아닙니다");
         }
 
         //승인된 참가자 수 체크
         int approvedCount = eventParticipantRepository
                 .countByEventEventIdAndStatus(eventId, EventStatus.APPROVED);
-        if(approvedCount >= event.getMaxParticipants()) {
+        if (approvedCount >= event.getMaxParticipants()) {
             throw new RuntimeException("최대 참가자 수를 초과했습니다");
         }
         //participant 조회 후 status 변경
@@ -76,7 +76,8 @@ public class EventParticipantService {
         participant.setApprovedAt(LocalDateTime.now());
 
     }
+ 
+
+
 }
-
-
 

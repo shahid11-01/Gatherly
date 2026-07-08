@@ -38,7 +38,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**",
-                                         "/api/kakao/**")
+                                         "/api/kakao/**",
+                                        "/api/google/**")
                                 .permitAll()
                         .anyRequest().authenticated()
                 )
