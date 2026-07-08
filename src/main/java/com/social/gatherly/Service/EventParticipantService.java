@@ -76,7 +76,21 @@ public class EventParticipantService {
         participant.setApprovedAt(LocalDateTime.now());
 
     }
- 
+
+//    @Transactional
+//    public void deleteParticipant(Long hostId, Long eventId, Long participantUserId) {
+//        Event event = eventRepository.findById(eventId).orElseThrow(()
+//                -> new EventNotFoundException("이벤트가 없습니다"));
+//
+//        if(!event.getHost().getUserId().equals(hostId)) {
+//            throw new UserNotFoundException("호스트가 아닙니다");
+//        }
+//
+//       int participant = eventParticipantRepository.countByEventEventIdAndStatus(eventId, EventStatus.APPROVED);
+//
+//
+//    }
+//
 
 
 }
