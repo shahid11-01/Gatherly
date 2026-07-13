@@ -1,15 +1,12 @@
 package com.social.gatherly.Entity;
 
-import com.social.gatherly.Enum.EventStatus;
+import com.social.gatherly.Enum.ParticipantStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.catalina.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Data
@@ -23,7 +20,7 @@ public class EventParticipant {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EventStatus status;
+    private ParticipantStatus status;
 
     @Column(name="requested_at", nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime requestedAt;

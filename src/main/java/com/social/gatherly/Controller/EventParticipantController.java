@@ -1,6 +1,7 @@
 package com.social.gatherly.Controller;
 
 
+import com.social.gatherly.Entity.EventParticipant;
 import com.social.gatherly.Entity.Users;
 import com.social.gatherly.Service.CustomUserDetailsService;
 import com.social.gatherly.Service.EventParticipantService;
@@ -38,4 +39,40 @@ public class EventParticipantController {
         eventParticipantService.approveRequest(user.getUserId(),eventId,participantUserId);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{eventId}/reject/{participantUserId}")
+    public ResponseEntity<Void> rejectRequest(@PathVariable Long eventId,
+                                              @PathVariable Long participantUserId,
+                                              @RequestHeader("Authorization") String authHeader) {
+        Users user = userAuthService.getAuthenticatedUser(authHeader);
+        eventParticipantService.rejectRequest(user.getUserId(), eventId, participantUserId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{eventId}/cancel")
+    public ResponseEntity<Void> cancelRequest(@PathVariable Long eventId,
+                                              @RequestHeader("Authorization") String authHeader) {
+        Users requesterId = userAuthService.getAuthenticatedUser(authHeader);
+        eventParticipantService.cancelRequest(requesterId.getUserId(),eventId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{eventId}/deleteParticipant")
+    public ResponseEntity<Void> deleteParticipant(@PathVariable Long eventId,
+                                                  @RequestHeader("Authorization") String authHeader) {
+        Users user = userAuthService.getAuthenticatedUser(authHeader);
+        eventParticipantService.deleteParticipant(user.getUserId(),eventId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{eventId}/leaveEvent")
+    public ResponseEntity<Void> leaveEvent(@PathVariable Long eventId,
+                                           @RequestHeader("Authorization") String authHeader) {
+        Users user = userAuthService.getAuthenticatedUser(authHeader);
+        eventParticipantService.leaveEvent(user.getUserId(), eventId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 }
