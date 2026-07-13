@@ -73,7 +73,7 @@ public class AuthController {
     ) {
         Users user = userAuthService.getAuthenticatedUser(authHeader);
         String result = userService.confirmPassword(userPasswordVerifyRequest.getPassword(), user.getUserId());
-        return ResponseEntity.ok().body(result);
+        return ResponseEntity.ok().body("비밀번호 인증이 되었습니다");
     }
 
     @PostMapping("/refresh")
@@ -83,9 +83,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<String> logout(@RequestBody RefreshTokenRequest request) {
             refreshTokenService.logout(request.getRefreshToken());
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("로그앗이 되었습니다");
     }
 
 

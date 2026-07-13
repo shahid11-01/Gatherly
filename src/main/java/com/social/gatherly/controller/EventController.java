@@ -48,22 +48,22 @@ public class EventController {
     }
 
     @PutMapping("/updateEvents")
-    public ResponseEntity<Void> updateEvent(@RequestBody EventRequestDto eventRequestDto,
+    public ResponseEntity<String> updateEvent(@RequestBody EventRequestDto eventRequestDto,
                                             @RequestHeader("Authorization") String authHeader,
                                             @RequestParam  Long eventId) {
         //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
         Users user = userAuthService.getAuthenticatedUser(authHeader);
         eventService.updateEvent(eventRequestDto, user.getUserId(), eventId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("이벤트 정보가 수정되었습니다");
     }
 
     @DeleteMapping("/{eventId}/events")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Long eventId,
+    public ResponseEntity<String> deleteEvent(@PathVariable Long eventId,
                                             @RequestHeader("Authorization") String authHeader){
         //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
         Users user = userAuthService.getAuthenticatedUser(authHeader);
         eventService.deleteEvent(eventId, user.getUserId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("이벤트가 삭제되었습니다");
     }
 
     @GetMapping("/eventAll{page}")
