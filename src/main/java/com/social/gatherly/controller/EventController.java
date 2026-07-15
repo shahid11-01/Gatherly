@@ -12,6 +12,7 @@ import com.social.gatherly.service.UserAuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,10 +31,9 @@ public class EventController {
 
     @PostMapping("/create")
     public ResponseEntity<Long> createEvent(@RequestBody EventRequestDto eventRequestDto,
-                                            @RequestHeader("Authorization") String authHeader) {
-        //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
-        Users user =  userAuthService.getAuthenticatedUser(authHeader);
-        Long eventId = eventService.createEvent(eventRequestDto, user.getUserId());
+                                            Authentication authentication) {
+        String email = authentication.getName();
+        Long eventId = eventService.createEvent(eventRequestDto, email);
         return ResponseEntity.ok(eventId);
     }
 
@@ -49,20 +49,18 @@ public class EventController {
 
     @PutMapping("/updateEvents")
     public ResponseEntity<String> updateEvent(@RequestBody EventRequestDto eventRequestDto,
-                                            @RequestHeader("Authorization") String authHeader,
+                                            Authentication authentication,
                                             @RequestParam  Long eventId) {
-        //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
-        Users user = userAuthService.getAuthenticatedUser(authHeader);
-        eventService.updateEvent(eventRequestDto, user.getUserId(), eventId);
+        String email = authentication.getName();
+        eventService.updateEvent(eventRequestDto, email, eventId);
         return ResponseEntity.ok("이벤트 정보가 수정되었습니다");
     }
 
     @DeleteMapping("/{eventId}/events")
     public ResponseEntity<String> deleteEvent(@PathVariable Long eventId,
-                                            @RequestHeader("Authorization") String authHeader){
-        //JWT 에서 email 추줄 -> DB 에서 Users 조회 현재 구조에 맞음
-        Users user = userAuthService.getAuthenticatedUser(authHeader);
-        eventService.deleteEvent(eventId, user.getUserId());
+                                            Authentication authentication){
+        String email = authentication.getName();
+        eventService.deleteEvent(eventId, email);
         return ResponseEntity.ok("이벤트가 삭제되었습니다");
     }
 

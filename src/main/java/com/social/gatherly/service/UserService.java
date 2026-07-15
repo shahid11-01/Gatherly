@@ -48,8 +48,8 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(UpdateUserRequest updateUserRequest, Long userId) {
-        Users user = usersRepository.findById(userId).orElseThrow(()
+    public void updateUser(UpdateUserRequest updateUserRequest, String email) {
+        Users user = usersRepository.findByEmail(email).orElseThrow(()
                 -> new UserNotFoundException("유저가 없습니다"));
 
         if(!user.getProvider().equals(Provider.LOCAL)) {
@@ -68,8 +68,8 @@ public class UserService {
 
     //비밀번호를 체크하고 + 바꾸기
     @Transactional
-    public void changePassword(ChangePasswordRequest request, Long userId) {
-        Users user = usersRepository.findById(userId)
+    public void changePassword(ChangePasswordRequest request, String email) {
+        Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("유저가 없습니다"));
 
         if(!user.getProvider().equals(Provider.LOCAL)) {
@@ -84,19 +84,19 @@ public class UserService {
     }
 
     // 비밀번호가 맞는지 체크
-    public String confirmPassword(String password, Long userId ) {
-        if(password == null) {
+    public String confirmPassword(UserPasswordVerifyRequest request, String email ) {
+        if(request == null) {
             throw new RuntimeException("비밀번호가 누락되었습니다");
         }
 
-        Users user = usersRepository.findById(userId)
+        Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("유저가 없습니다"));
 
         if(!user.getProvider().equals(Provider.LOCAL)) {
             throw new RuntimeException("로컬 계정만 요청 가능합니다");
         }
 
-        if (passwordEncoder.matches(password, user.getPassword())) {
+        if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return "인증에 성공하였습니다";
         } else{
             throw new RuntimeException("비밀번호가 일치하지 않습니다");

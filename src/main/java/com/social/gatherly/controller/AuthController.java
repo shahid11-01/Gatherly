@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,39 +41,34 @@ public class AuthController {
         return ResponseEntity.ok().body(authResponseDto);
     }
 
-    @Operation(summary = "Update User")
-    @SecurityRequirement(name = "JWT")
+
     @PutMapping("/update")
     public ResponseEntity<String> updateUser(@RequestBody UpdateUserRequest updateUserRequest,
-
-                                             @RequestHeader("Authorization") String authHeader
+                                             Authentication  authentication
     ) {
-        System.out.println("요청이 왔어요1");
-        log.info("요청이 왔어요 1.5", updateUserRequest);
-        Users user = userAuthService.getAuthenticatedUser(authHeader);
-        System.out.println("2:" + user.getEmail());
-        userService.updateUser(updateUserRequest, user.getUserId());
-        System.out.println("3:" + user.getEmail());
-        return ResponseEntity.ok().body("유저 정보 수정이 성공했습니다. 다시 로그인 해 주세요");
+        String email = authentication.getName();
+        userService.updateUser(updateUserRequest, email);
+        return ResponseEntity.ok("유저 정보 수정이 성공했습니다");
+
     }
 
     @PatchMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
-                                                 @RequestHeader("Authorization") String authHeader
+                                                Authentication authentication
 
     ) {
-        Users user = userAuthService.getAuthenticatedUser(authHeader);
-        userService.changePassword(changePasswordRequest, user.getUserId());
+       String email = authentication.getName();
+       userService.changePassword(changePasswordRequest, email);
         return ResponseEntity.ok().body("비밀번호가 변경되었습니다");
     }
 
     @PostMapping("/verify")
     public ResponseEntity<String> verifyUserByPassword(
-            @RequestBody UserPasswordVerifyRequest userPasswordVerifyRequest,
-            @RequestHeader("Authorization") String authHeader
+            @RequestBody UserPasswordVerifyRequest request,
+           Authentication authentication
     ) {
-        Users user = userAuthService.getAuthenticatedUser(authHeader);
-        String result = userService.confirmPassword(userPasswordVerifyRequest.getPassword(), user.getUserId());
+        String email = authentication.getName();
+        userService.confirmPassword(request, email);
         return ResponseEntity.ok().body("비밀번호 인증이 되었습니다");
     }
 
@@ -85,7 +81,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestBody RefreshTokenRequest request) {
             refreshTokenService.logout(request.getRefreshToken());
-            return ResponseEntity.ok("로그앗이 되었습니다");
+            return ResponseEntity.ok("로그아웃 되었습니다");
     }
 
 

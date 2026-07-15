@@ -36,12 +36,14 @@ public class EventService {
     private final GlobalConfig globalConfig;
 
 
-    public Long createEvent(EventRequestDto eventRequestDto, Long userId) {
-        Users host = usersRepository.findById(userId).orElseThrow(()
+    public Long createEvent(EventRequestDto eventRequestDto, String email) {
+        Users host = usersRepository.findByEmail(email).orElseThrow(()
                 -> new UserNotFoundException("유저가 없습니다"));
         if(eventRequestDto.getEndDate().isBefore(eventRequestDto.getStartDate())) {
             throw new IllegalArgumentException("종료일은 시작일보다 빠를 수 없습니다");
         }
+
+
         Event events = new Event();
         events.setTitle(eventRequestDto.getTitle());
         events.setDescription(eventRequestDto.getDescription());
@@ -54,7 +56,7 @@ public class EventService {
 
     }
 
-    public void updateEvent(EventRequestDto eventRequestDto, Long userId, Long eventId) {
+    public void updateEvent(EventRequestDto eventRequestDto, String email, Long eventId) {
         Event updatedEvent = eventRepository.findById(eventId)
                         .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
 
@@ -63,7 +65,7 @@ public class EventService {
         }
 
 
-        if(!updatedEvent.getHost().getUserId().equals(userId)) {
+        if(!updatedEvent.getHost().getEmail().equals(email)) {
             throw new IllegalArgumentException("권한 없습니다");
         }
         updatedEvent.setTitle(eventRequestDto.getTitle());
@@ -76,10 +78,10 @@ public class EventService {
     }
 
 
-    public void deleteEvent(Long eventId, Long userId) {
+    public void deleteEvent(Long eventId, String email) {
         Event event = eventRepository.findById(eventId)
                         .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
-        if(!event.getHost().getUserId().equals(userId)) {
+        if(!event.getHost().getEmail().equals(email)) {
             throw new IllegalArgumentException("권한 없습니다");
         }
         eventRepository.deleteById(eventId);
