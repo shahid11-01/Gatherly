@@ -47,7 +47,7 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/updateEvents")
+    @PutMapping("/{eventId}")
     public ResponseEntity<String> updateEvent(@RequestBody EventRequestDto eventRequestDto,
                                             Authentication authentication,
                                             @RequestParam  Long eventId) {
@@ -56,7 +56,7 @@ public class EventController {
         return ResponseEntity.ok("이벤트 정보가 수정되었습니다");
     }
 
-    @DeleteMapping("/{eventId}/events")
+    @DeleteMapping("/delete/{eventId}")
     public ResponseEntity<String> deleteEvent(@PathVariable Long eventId,
                                             Authentication authentication){
         String email = authentication.getName();
@@ -64,7 +64,7 @@ public class EventController {
         return ResponseEntity.ok("이벤트가 삭제되었습니다");
     }
 
-    @GetMapping("/eventAll{page}")
+    @GetMapping("/eventAll/{page}")
     public EventAllResponse<EventResponseDto> getAllEvent(
             @PathVariable Integer page
     ) {
