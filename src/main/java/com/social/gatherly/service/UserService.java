@@ -103,7 +103,19 @@ public class UserService {
 
         }
 
-}
+    }
+    //현재 로그인한 사용자 조회
+    public UserResponseDto getCurrentUser(String email) {
+        Users user = usersRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("유저가 없습니다"));
+
+        return UserResponseDto.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .build();
+    }
 
 
     public AuthResponseDto loginUser(LoginRequestDto loginRequestDto) {

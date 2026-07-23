@@ -84,6 +84,12 @@ public class AuthController {
             return ResponseEntity.ok("로그아웃 되었습니다");
     }
 
+    @GetMapping("/user/me")
+    public ResponseEntity<UserResponseDto> getCurrenUser(Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(userService.getCurrentUser(email));
+    }
+
 
 
 
