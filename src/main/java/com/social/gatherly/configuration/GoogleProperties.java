@@ -13,14 +13,5 @@ import org.springframework.context.annotation.Configuration;
 public class GoogleProperties {
     private String clientId;
 
-    private String clientSecret;
-
-    private String redirectUri;
-
-    private String tokenUri;
-
-    private String userInfoUri;
-
-
 
 }

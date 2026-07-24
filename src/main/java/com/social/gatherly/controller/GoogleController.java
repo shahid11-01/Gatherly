@@ -18,7 +18,7 @@ public class GoogleController {
     public ResponseEntity<AuthResponseDto> login(
             @RequestBody GoogleLoginRequest request) {
         AuthResponseDto authResponseDto =
-                googleAuthService.login(request.getCode());
+                googleAuthService.login(request.getIdToken());
                 return ResponseEntity.ok(authResponseDto);
     }
 }

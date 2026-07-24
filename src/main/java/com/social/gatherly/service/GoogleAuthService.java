@@ -1,6 +1,10 @@
 package com.social.gatherly.service;
 
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import com.social.gatherly.configuration.GoogleProperties;
 import com.social.gatherly.dto.AuthResponseDto;
 import com.social.gatherly.dto.google.GoogleTokenResponse;
@@ -17,6 +21,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,56 +33,38 @@ public class GoogleAuthService {
     private final UsersRepository usersRepository;
     private final TokenService tokenService;
 
-    public AuthResponseDto login(String authorizationCode) {
-        //Authorization code -> access token
-        GoogleTokenResponse tokenResponse = getAccessToken(authorizationCode);
-        //Access Token -> UserInfo
-        GoogleUserResponse googleUserResponse =getUserInfo(tokenResponse.getAccessToken());
-        //User 확인
-        Users user = findOrCreateUser(googleUserResponse);
-        return tokenService.generateTokens(
-                user.getEmail(),
-                "Google Login Successful"
-        );
+    public AuthResponseDto login(String idTokenString) {
+            //빌딩 Verifier
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                new NetHttpTransport(), GsonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList(googleProperties.getClientId()))
+                .build();
+
+        //Verify signature + expiry + audience
+        GoogleIdToken idToken;
+        try {
+            idToken = verifier.verify(idTokenString);
+        }catch (Exception e) {
+            throw new OAuthException("Google ID 토큰 검증 실패");
+        }
+        if(idToken == null) {
+            throw new OAuthException("유효하지 않은 Google ID 토큰입니다");
+        }
+        //토큰안에서 유저 정보를 가져오기
+        GoogleIdToken.Payload payload = idToken.getPayload();
+        GoogleUserResponse googleUser = new GoogleUserResponse();
+        googleUser.setSub(payload.getSubject());
+        googleUser.setEmail(payload.getEmail());
+        googleUser.setEmailVerified(payload.getEmailVerified());
+        googleUser.setName((String) payload.get("name"));
+        googleUser.setPicture((String) payload.get("picture"));
+
+        Users user = findOrCreateUser(googleUser);
+        return tokenService.generateTokens(user.getEmail(), "구글 로그인 성공했습니다");
+
 
     }
 
-
-    private GoogleTokenResponse getAccessToken(String authorizationCode) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code" );
-        params.add("client_id", googleProperties.getClientId());
-        params.add("client_secret", googleProperties.getClientSecret());
-        params.add("redirect_uri", googleProperties.getRedirectUri());
-        params.add("code", authorizationCode);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-        ResponseEntity<GoogleTokenResponse> response =
-                restTemplate.postForEntity(
-                        googleProperties.getUserInfoUri(),
-                        request,
-                        GoogleTokenResponse.class
-                );
-        return response.getBody();
-
-    }
-
-    private GoogleUserResponse getUserInfo(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        HttpEntity<Void> request = new HttpEntity<>(headers);
-
-       ResponseEntity<GoogleUserResponse> response =
-               restTemplate.exchange(
-                       googleProperties.getTokenUri(),
-                       HttpMethod.GET,
-                       request,
-                       GoogleUserResponse.class
-               );
-       return response.getBody();
-    }
 
     private Users findOrCreateUser(GoogleUserResponse googleUser)  {
         if(googleUser.getEmail() == null) {
