@@ -1,6 +1,7 @@
 package com.social.gatherly.entity;
 
 
+import com.social.gatherly.Enum.EventCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,6 +36,10 @@ public class Event {
 
     @Column(name="max_participants",columnDefinition = "Integer", nullable = false)
     private int maxParticipants = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column( nullable = false)
+    private EventCategory category;
 
     @Column(name= "created_at", columnDefinition = "DATETIME", updatable = false)
     @CreationTimestamp

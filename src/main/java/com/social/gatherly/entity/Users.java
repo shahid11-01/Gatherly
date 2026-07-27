@@ -28,6 +28,9 @@ public class Users {
     @Column(name= "email", columnDefinition = "CHAR(100)", nullable = false, length = 100, unique = true)
     private String email;
 
+    @Column(name = "user_phone", columnDefinition ="CHAR(50)", nullable = true, length = 50)
+    private String userPhone;
+
     @Column(name="password", columnDefinition = "CHAR(255)", nullable = false, length = 255)
     private String password;
 

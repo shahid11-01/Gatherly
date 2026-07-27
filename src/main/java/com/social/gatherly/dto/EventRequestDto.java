@@ -1,6 +1,7 @@
 package com.social.gatherly.dto;
 
 
+import com.social.gatherly.Enum.EventCategory;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,8 @@ public class EventRequestDto {
     private LocalDateTime endDate;
 
     private int maxParticipants;
+
+    private EventCategory category;
 
 
 }

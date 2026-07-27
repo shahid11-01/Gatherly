@@ -1,6 +1,7 @@
 package com.social.gatherly.service;
 
 
+import com.social.gatherly.Enum.EventCategory;
 import com.social.gatherly.configuration.GlobalConfig;
 import com.social.gatherly.dto.EventAllResponse;
 import com.social.gatherly.dto.EventImageResponse;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Service
@@ -50,6 +52,7 @@ public class EventService {
         events.setStartDate(eventRequestDto.getStartDate());
         events.setEndDate(eventRequestDto.getEndDate());
         events.setMaxParticipants(eventRequestDto.getMaxParticipants());
+        events.setCategory(eventRequestDto.getCategory());
         events.setHost(host);
         Event savedEvent = eventRepository.save(events);
         return savedEvent.getEventId();
@@ -72,6 +75,7 @@ public class EventService {
         updatedEvent.setDescription(eventRequestDto.getDescription());
         updatedEvent.setStartDate(eventRequestDto.getStartDate());
         updatedEvent.setEndDate(eventRequestDto.getEndDate());
+        updatedEvent.setCategory(eventRequestDto.getCategory());
         updatedEvent.setMaxParticipants(eventRequestDto.getMaxParticipants());
         eventRepository.save(updatedEvent);
 
@@ -88,10 +92,12 @@ public class EventService {
     }
 
 
-    public EventAllResponse<EventResponseDto> getEvents(Integer pageNum) {
+    public EventAllResponse<EventResponseDto> getEvents(Integer pageNum, EventCategory category) {
         //pageable 생성
         Pageable page = PageRequest.of(pageNum, 10);
-        Page<Event> events = eventRepository.findAll(page);
+        Page<Event> events = (category == null)
+                ? eventRepository.findAll(page) //모든 이벤트
+                :eventRepository.findByCategory(category, page); //카테고리별로 필터링
 
         //DTO 변환-> page 안의 실제 event 목록 꺼내기(하나씩 꺼냄)
         List<EventResponseDto> eventResponseDtoList = events.getContent()
@@ -109,9 +115,13 @@ public class EventService {
                 .build();
     }
 
-    public List<EventImageResponse> eventImageUpload(Long eventId, List<MultipartFile> images) throws IOException {
+    public List<EventImageResponse> eventImageUpload(Long eventId, List<MultipartFile> images,String email) throws IOException {
         Event events = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
+
+        if(!events.getHost().getEmail().equals(email)) {
+            throw new IllegalArgumentException("이 이벤트를 수정할 권한이 없습니다");
+        }
         if(images.isEmpty()) {
             throw new IOException("이미지가 없습니다");
         }

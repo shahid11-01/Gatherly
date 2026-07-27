@@ -1,6 +1,7 @@
 package com.social.gatherly.controller;
 
 
+import com.social.gatherly.Enum.EventCategory;
 import com.social.gatherly.dto.EventAllResponse;
 import com.social.gatherly.dto.EventImageResponse;
 import com.social.gatherly.dto.EventRequestDto;
@@ -41,16 +42,18 @@ public class EventController {
     @PostMapping("/{eventId}/images")
     public ResponseEntity<List<EventImageResponse>> uploadEventImages(
             @PathVariable Long eventId,
-            @RequestParam("images") List<MultipartFile> images
+            @RequestParam("images") List<MultipartFile> images,
+            Authentication authentication
     ) throws IOException {
-        List<EventImageResponse> response = eventService.eventImageUpload(eventId, images);
+        String email = authentication.getName();
+        List<EventImageResponse> response = eventService.eventImageUpload(eventId, images,email);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{eventId}")
     public ResponseEntity<String> updateEvent(@RequestBody EventRequestDto eventRequestDto,
                                             Authentication authentication,
-                                            @RequestParam  Long eventId) {
+                                            @PathVariable  Long eventId) {
         String email = authentication.getName();
         eventService.updateEvent(eventRequestDto, email, eventId);
         return ResponseEntity.ok("이벤트 정보가 수정되었습니다");
@@ -66,10 +69,12 @@ public class EventController {
 
     @GetMapping("/eventAll/{page}")
     public EventAllResponse<EventResponseDto> getAllEvent(
-            @PathVariable Integer page
+            @PathVariable Integer page,
+            Authentication authentication,
+            @RequestParam(required = false)EventCategory category
     ) {
 
-        return eventService.getEvents(page);
+        return eventService.getEvents(page, category);
 
     }
 
