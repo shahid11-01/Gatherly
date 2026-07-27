@@ -20,7 +20,6 @@ public class KakaoController {
     public ResponseEntity<AuthResponseDto> login(
             @RequestBody KakaoLoginRequest request
     ) {
-        AuthResponseDto responseDto = kakaoAuthService.login(request.getCode());
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(kakaoAuthService.login(request.getAccessToken()));
     }
 }

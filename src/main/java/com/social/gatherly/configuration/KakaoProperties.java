@@ -10,17 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "kakao")
 public class KakaoProperties {
-
-    private String clientId;
-
-    private String clientSecret;
-
-    private String redirectUri;
-
-    //Access Token 요청
-    private String tokenUri;
-
-    //사용자 정보 조회 URL
     private String userInfoUri;
 
 

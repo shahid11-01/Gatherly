@@ -12,10 +12,7 @@ import com.social.gatherly.Enum.Role;
 import com.social.gatherly.exception.OAuthException;
 import com.social.gatherly.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -25,16 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-/**
- * 카카오 OAuth 로그인 전체 과정을 담당하는 서비스입니다
- * 역할:
- * 1.Authorization Code 수신
- * 2.Access Token 요청
- * 3.사용자 정보 조회
- * 4.DB 사용자 확인
- * 5.신규 회원 생성
- * 6.JWT 생성
- */
+
 @Service
 @RequiredArgsConstructor
 public class KakaoAuthService {
@@ -46,57 +34,26 @@ public class KakaoAuthService {
     private final RefreshTokenService refreshTokenService;
     private final TokenService tokenService;
 
-    public AuthResponseDto login(String authorizationCode){
-        //Authorization Code - > Access Token
-        KakaoTokenResponse tokenResponse = getAccessToken(authorizationCode);
-        //Access Token -> UserInfo
-        KakaoUserResponse kakaoUserResponse = getUserInfo(tokenResponse.getAccessToken());
-        //User 확인
-        Users user = findOrCreateUser(kakaoUserResponse);
-
-        return tokenService.generateTokens(
-                user.getEmail(),
-                "Kakao Login Successful"
-        );
+    public AuthResponseDto login(String accessToken){
+            KakaoUserResponse kakaoUser = getUserInfo(accessToken);
+            Users user = findOrCreateUser(kakaoUser);
+            return tokenService.generateTokens(user.getEmail(), "카카오 로그인 성공했어요");
     }
 
-    private KakaoTokenResponse getAccessToken(String authorizationCode) {
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 
-        //요청 바디 만들기
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", kakaoProperties.getClientId());
-        body.add("client_secret", kakaoProperties.getClientSecret());
-        body.add("redirect_url", kakaoProperties.getRedirectUri());
-        body.add("code", authorizationCode);
-
-        HttpHeaders headers = new HttpHeaders();
-        //JSON 아니고 FORM DATA임을 알려준다
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, String>> request =
-                new HttpEntity<>(body, headers);
-
-        ResponseEntity<KakaoTokenResponse> response =
-                restTemplate.postForEntity(
-                        kakaoProperties.getRedirectUri(),
-                        request,
-                        //JSON ->>DTO
-                        KakaoTokenResponse.class
-                );
-        return response.getBody();
-    }
 
 
     //유저 정보를 가져오기
     private KakaoUserResponse getUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
         ResponseEntity<KakaoUserResponse> response =
-                restTemplate.postForEntity(
+                restTemplate.exchange(
                         kakaoProperties.getUserInfoUri(),
+                        HttpMethod.GET,
                         request,
                         KakaoUserResponse.class
                 );
@@ -111,7 +68,7 @@ public class KakaoAuthService {
         String providerId = String.valueOf(kakaoUser.getId());
 
         Optional<Users> optionalUsers = usersRepository.findByEmail(email);
-        if(!optionalUsers.isPresent()) {
+        if(optionalUsers.isPresent()) {
             Users user = optionalUsers.get();
             if(user.getProvider() != Provider.KAKAO) {
                 throw new OAuthException(

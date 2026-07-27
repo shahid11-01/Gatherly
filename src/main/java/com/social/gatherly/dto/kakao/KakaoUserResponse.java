@@ -4,6 +4,7 @@ package com.social.gatherly.dto.kakao;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 카카오 사용자 정보를 저장하는 DTO 입니다
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
  * 사용자 정보를 조회할 때 사용한다
  */
 @Getter
+@Setter
 @NoArgsConstructor
 public class KakaoUserResponse {
     //키카오 유저 ID

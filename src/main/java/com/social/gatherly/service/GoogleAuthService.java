@@ -34,6 +34,7 @@ public class GoogleAuthService {
     private final TokenService tokenService;
 
     public AuthResponseDto login(String idTokenString) {
+        System.out.println("backend client-id" + googleProperties.getClientId());
             //빌딩 Verifier
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(), GsonFactory.getDefaultInstance())
@@ -45,11 +46,15 @@ public class GoogleAuthService {
         try {
             idToken = verifier.verify(idTokenString);
         }catch (Exception e) {
+            System.out.println("verify threw + " + e.getMessage());
             throw new OAuthException("Google ID 토큰 검증 실패");
         }
         if(idToken == null) {
+            System.out.println("idToken is Null/client-id mismatch likely");
             throw new OAuthException("유효하지 않은 Google ID 토큰입니다");
         }
+        System.out.println("token ok, email" + idToken.getPayload().getEmail());
+
         //토큰안에서 유저 정보를 가져오기
         GoogleIdToken.Payload payload = idToken.getPayload();
         GoogleUserResponse googleUser = new GoogleUserResponse();

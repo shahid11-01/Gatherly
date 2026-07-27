@@ -17,6 +17,7 @@ public class GoogleController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(
             @RequestBody GoogleLoginRequest request) {
+        System.out.println("Google endpoint hit");
         AuthResponseDto authResponseDto =
                 googleAuthService.login(request.getIdToken());
                 return ResponseEntity.ok(authResponseDto);
