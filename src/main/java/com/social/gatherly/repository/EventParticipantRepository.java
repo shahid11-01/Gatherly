@@ -22,4 +22,6 @@ public interface EventParticipantRepository extends JpaRepository<EventParticipa
 
     //approveRequest -승인할 participant 조회
     int countByEventEventIdAndStatus(Long eventId, ParticipantStatus participantStatus);
+
+    long countByUserEmail(String email);
 }

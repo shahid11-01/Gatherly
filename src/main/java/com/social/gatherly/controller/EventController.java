@@ -75,9 +75,26 @@ public class EventController {
     ) {
 
         return eventService.getEvents(page, category);
+    }
 
+    @GetMapping("/featured/{page}")
+    public EventAllResponse<EventResponseDto> featured (@PathVariable int page) {
+        return eventService.getFeatured(page);
+    }
 
+    @GetMapping("/nearby/{page}")
+    public EventAllResponse<EventResponseDto> nearby (@PathVariable int page) {
+        return eventService.getNearby(page);
+    }
 
+    @GetMapping("/hosted/{page}")
+    public EventAllResponse<EventResponseDto> hosted (@PathVariable int page, Authentication authentication) {
+        return eventService.getHosted(authentication.getName(), page);
+    }
+
+    @GetMapping("/joined/{page}")
+    public EventAllResponse<EventResponseDto> joined(@PathVariable int page, Authentication authentication) {
+        return eventService.getJoined(authentication.getName(),page);
     }
 
 

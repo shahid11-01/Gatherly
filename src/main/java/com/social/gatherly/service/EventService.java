@@ -2,6 +2,7 @@ package com.social.gatherly.service;
 
 
 import com.social.gatherly.Enum.EventCategory;
+import com.social.gatherly.Enum.ParticipantStatus;
 import com.social.gatherly.configuration.GlobalConfig;
 import com.social.gatherly.dto.EventAllResponse;
 import com.social.gatherly.dto.EventImageResponse;
@@ -21,11 +22,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -91,30 +96,6 @@ public class EventService {
         eventRepository.deleteById(eventId);
     }
 
-
-    public EventAllResponse<EventResponseDto> getEvents(Integer pageNum, EventCategory category) {
-        //pageable 생성
-        Pageable page = PageRequest.of(pageNum, 10);
-        Page<Event> events = (category == null)
-                ? eventRepository.findAll(page) //모든 이벤트
-                :eventRepository.findByCategory(category, page); //카테고리별로 필터링
-
-        //DTO 변환-> page 안의 실제 event 목록 꺼내기(하나씩 꺼냄)
-        List<EventResponseDto> eventResponseDtoList = events.getContent()
-                .stream()
-                .map(EventResponseDto::from)
-                .toList();
-
-        return EventAllResponse.<EventResponseDto>builder()
-                .events(eventResponseDtoList)
-                .page(events.getNumber())
-                .size(events.getSize())
-                .total(events.getTotalElements())
-                .totalPages(events.getTotalPages())
-                .last(events.isLast())
-                .build();
-    }
-
     public List<EventImageResponse> eventImageUpload(Long eventId, List<MultipartFile> images,String email) throws IOException {
         Event events = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
@@ -142,6 +123,62 @@ public class EventService {
                         .url(globalConfig.getDomain() + entity.getEventImageUrl())
                         .build())
                 .toList();
+    }
+
+
+    @Transactional(readOnly = true)
+    public EventAllResponse<EventResponseDto> getEvents(Integer pageNum, EventCategory category) {
+        //pageable 생성
+        Pageable page = PageRequest.of(pageNum, 10);
+        Page<Event> events = (category == null)
+                ? eventRepository.findAll(page) //모든 이벤트
+                : eventRepository.findByCategory(category, page); //카테고리별로 필터링
+        return toResponse(events);
+    }
+
+
+    @Transactional(readOnly = true)
+    public EventAllResponse<EventResponseDto> getFeatured(int page) {
+        Page<Event> events = eventRepository.findAllOrderByParticipantCountDesc(PageRequest.of(page, 10));
+        return toResponse(events);
+    }
+
+    @Transactional(readOnly = true)
+    public EventAllResponse<EventResponseDto> getNearby(int page) {
+        Page<Event> events = eventRepository.findByStartDateAfterOrderByStartDateAsc(
+                LocalDateTime.now(), PageRequest.of(page, 10));
+        return toResponse(events);
+    }
+    @Transactional(readOnly = true)
+    public EventAllResponse<EventResponseDto> getHosted(String email, int pageNum) {
+        Users host = usersRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("유저가 없습니다"));
+        Page<Event> events = eventRepository.findByHostOrderByStartDateDesc(host, PageRequest.of(pageNum, 10));
+        return toResponse(events);
+    }
+    @Transactional(readOnly = true)
+    public EventAllResponse<EventResponseDto> getJoined(String email, int pageNum) {
+        Page<Event>events = eventRepository.findJoinedByEmail(
+                email, ParticipantStatus.APPROVED, PageRequest.of(pageNum,10));
+        return  toResponse(events);
+
+    }
+
+    private EventAllResponse<EventResponseDto> toResponse(Page<Event> events) {
+        //DTO 변환-> page 안의 실제 event 목록 꺼내기(하나씩 꺼냄)
+        List<EventResponseDto> eventResponseDtoList = events.getContent()
+                .stream()
+                .map(e -> EventResponseDto.from(e, globalConfig.getDomain()))
+                .toList();
+
+        return EventAllResponse.<EventResponseDto>builder()
+                .events(eventResponseDtoList)
+                .page(events.getNumber())
+                .size(events.getSize())
+                .total(events.getTotalElements())
+                .totalPages(events.getTotalPages())
+                .last(events.isLast())
+                .build();
     }
 
 
