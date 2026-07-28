@@ -1,6 +1,7 @@
 package com.social.gatherly.dto;
 
 
+import com.social.gatherly.Enum.EventCategory;
 import com.social.gatherly.entity.Event;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class EventResponseDto {
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private EventCategory category;
     private int maxParticipants;
 
    public static EventResponseDto from(Event event) {
@@ -27,6 +29,7 @@ public class EventResponseDto {
                .description(event.getDescription())
                .startDate(event.getStartDate())
                .endDate(event.getEndDate())
+               .category(event.getCategory())
                .maxParticipants(event.getMaxParticipants())
                .build();
 

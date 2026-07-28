@@ -41,6 +41,7 @@ public class SecurityConfiguration {
                                         "/api/auth/**",
                                          "/api/kakao/**",
                                         "/api/google/**",
+                                        "/api/event/{eventId}/images",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html")

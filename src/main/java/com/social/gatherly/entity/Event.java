@@ -34,8 +34,8 @@ public class Event {
     @Column(name="end_date", nullable = false)
     private LocalDateTime endDate;
 
-    @Column(name="max_participants",columnDefinition = "Integer", nullable = false)
-    private int maxParticipants = 0;
+    @Column(name="max_participants", nullable = false)
+    private int maxParticipants = 1;
 
     @Enumerated(EnumType.STRING)
     @Column( nullable = false)

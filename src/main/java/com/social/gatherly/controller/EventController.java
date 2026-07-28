@@ -76,6 +76,8 @@ public class EventController {
 
         return eventService.getEvents(page, category);
 
+
+
     }
 
 
