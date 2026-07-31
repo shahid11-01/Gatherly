@@ -66,6 +66,7 @@ public class EventService {
 
     }
 
+    @Transactional
     public void updateEvent(EventRequestDto eventRequestDto, String email, Long eventId) {
         Event updatedEvent = eventRepository.findById(eventId)
                         .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
@@ -97,6 +98,7 @@ public class EventService {
         }
         eventRepository.deleteById(eventId);
     }
+
     @Transactional
     public List<EventImageResponse> eventImageUpload(Long eventId, List<MultipartFile> images,String email) throws IOException {
         Event events = eventRepository.findById(eventId)
@@ -164,6 +166,7 @@ public class EventService {
         System.out.println("Nearby TOTAL = " + events.getTotalElements());
         return toResponse(events);
     }
+
     @Transactional(readOnly = true)
     public EventAllResponse<EventResponseDto> getHosted(String email, int pageNum) {
         System.out.println("Hosted" + pageNum);
@@ -172,6 +175,7 @@ public class EventService {
         Page<Event> events = eventRepository.findByHostOrderByStartDateDesc(host, PageRequest.of(pageNum, 10));
         return toResponse(events);
     }
+
     @Transactional(readOnly = true)
     public EventAllResponse<EventResponseDto> getJoined(String email, int pageNum) {
         System.out.println("Joined events" + pageNum);

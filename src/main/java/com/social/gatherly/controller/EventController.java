@@ -58,6 +58,7 @@ public class EventController {
                                             @PathVariable  Long eventId) {
         String email = authentication.getName();
         eventService.updateEvent(eventRequestDto, email, eventId);
+        System.out.println("Updated Event" + eventId);
         return ResponseEntity.ok("이벤트 정보가 수정되었습니다");
     }
 
