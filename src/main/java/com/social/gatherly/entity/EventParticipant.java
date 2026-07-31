@@ -2,14 +2,13 @@ package com.social.gatherly.entity;
 
 import com.social.gatherly.Enum.ParticipantStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name =  "event_participant")

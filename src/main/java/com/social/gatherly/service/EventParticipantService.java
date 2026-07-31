@@ -1,6 +1,7 @@
 package com.social.gatherly.service;
 
 
+import com.social.gatherly.dto.ParticipantResponse;
 import com.social.gatherly.entity.Event;
 import com.social.gatherly.entity.EventParticipant;
 import com.social.gatherly.entity.Users;
@@ -14,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +33,9 @@ public class EventParticipantService {
                 orElseThrow(() -> new UserNotFoundException("유저가 없습니다"));
 
         Event joinedEvent = getEvent(eventId);
-
+        if(joinedEvent.getHost().getEmail().equals(user.getEmail())) {
+            throw new UserNotFoundException("호스트 요청 보내면 안 됩니다");
+        }
 
         //유저가 전에 요청하는지 안 하는지 확인
         boolean alreadyRequested = eventParticipantRepository.
@@ -154,6 +159,26 @@ public class EventParticipantService {
         eventParticipantRepository.delete(participant);
     }
 
+    @Transactional(readOnly = true)
+    public List<ParticipantResponse> getParticipants(String hostEmail, Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
+
+        //호스트만 요처 리스트를 볼 수 있음
+       if(!event.getHost().getEmail().equals(hostEmail)) {
+           throw new EventNotFoundException("권한 없습니다");
+       }
+
+       return eventParticipantRepository.findByEvent(event).stream()
+               .map(p -> ParticipantResponse.builder()
+                       .participantId(p.getParticipantId())
+                       .userId(p.getUser().getUserId())
+                       .userName(p.getUser().getUserName())
+                       .status(p.getStatus())
+                       .requestedAt(p.getRequestedAt())
+                       .build())
+               .toList();
+    }
 
 
 }

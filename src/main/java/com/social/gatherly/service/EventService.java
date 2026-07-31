@@ -18,6 +18,7 @@ import com.social.gatherly.repository.EventImageRepository;
 import com.social.gatherly.repository.EventRepository;
 import com.social.gatherly.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,7 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EventService {
 
     private final EventRepository eventRepository;
@@ -95,7 +97,7 @@ public class EventService {
         }
         eventRepository.deleteById(eventId);
     }
-
+    @Transactional
     public List<EventImageResponse> eventImageUpload(Long eventId, List<MultipartFile> images,String email) throws IOException {
         Event events = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));
@@ -133,24 +135,38 @@ public class EventService {
         Page<Event> events = (category == null)
                 ? eventRepository.findAll(page) //모든 이벤트
                 : eventRepository.findByCategory(category, page); //카테고리별로 필터링
+        System.out.println("events and categories" + events.getContent());
         return toResponse(events);
     }
 
 
     @Transactional(readOnly = true)
     public EventAllResponse<EventResponseDto> getFeatured(int page) {
-        Page<Event> events = eventRepository.findAllOrderByParticipantCountDesc(PageRequest.of(page, 10));
-        return toResponse(events);
+        try {
+            System.out.println("Featured" + page);
+            Page<Event> events = eventRepository.findAllOrderByParticipantCountDesc(PageRequest.of(page, 10));
+            System.out.println("FEATURED TOTAL = " + events.getTotalElements());
+            return toResponse(events);
+        }catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+
+
     }
 
     @Transactional(readOnly = true)
     public EventAllResponse<EventResponseDto> getNearby(int page) {
+        System.out.println("Nearby" + page);
         Page<Event> events = eventRepository.findByStartDateAfterOrderByStartDateAsc(
                 LocalDateTime.now(), PageRequest.of(page, 10));
+        System.out.println("Nearby TOTAL = " + events.getTotalElements());
         return toResponse(events);
     }
     @Transactional(readOnly = true)
     public EventAllResponse<EventResponseDto> getHosted(String email, int pageNum) {
+        System.out.println("Hosted" + pageNum);
         Users host = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("유저가 없습니다"));
         Page<Event> events = eventRepository.findByHostOrderByStartDateDesc(host, PageRequest.of(pageNum, 10));
@@ -158,11 +174,22 @@ public class EventService {
     }
     @Transactional(readOnly = true)
     public EventAllResponse<EventResponseDto> getJoined(String email, int pageNum) {
+        System.out.println("Joined events" + pageNum);
         Page<Event>events = eventRepository.findJoinedByEmail(
                 email, ParticipantStatus.APPROVED, PageRequest.of(pageNum,10));
+        System.out.println("joined total" +events.getTotalElements());
         return  toResponse(events);
-
     }
+
+    @Transactional(readOnly = true)
+    public EventAllResponse<EventResponseDto> getPending(String email, int pageNum) {
+        Page<Event>events = eventRepository.findJoinedByEmail(
+                email, ParticipantStatus.PENDING, PageRequest.of(pageNum,10));
+        System.out.println("pending total" +events.getTotalElements());
+                return toResponse(events);
+    }
+
+
 
     private EventAllResponse<EventResponseDto> toResponse(Page<Event> events) {
         //DTO 변환-> page 안의 실제 event 목록 꺼내기(하나씩 꺼냄)
@@ -179,6 +206,13 @@ public class EventService {
                 .totalPages(events.getTotalPages())
                 .last(events.isLast())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public EventResponseDto getEvent(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(()-> new EventNotFoundException("이벤트가 없습니다"));
+        return EventResponseDto.from((event), globalConfig.getDomain());
     }
 
 

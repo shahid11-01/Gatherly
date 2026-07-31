@@ -45,12 +45,14 @@ public class EventController {
             @RequestParam("images") List<MultipartFile> images,
             Authentication authentication
     ) throws IOException {
+        System.out.println("Images" + images);
         String email = authentication.getName();
         List<EventImageResponse> response = eventService.eventImageUpload(eventId, images,email);
+        System.out.println("Response" + response);
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{eventId}")
+    @PutMapping("/updateEvent/{eventId}")
     public ResponseEntity<String> updateEvent(@RequestBody EventRequestDto eventRequestDto,
                                             Authentication authentication,
                                             @PathVariable  Long eventId) {
@@ -79,25 +81,39 @@ public class EventController {
 
     @GetMapping("/featured/{page}")
     public EventAllResponse<EventResponseDto> featured (@PathVariable int page) {
+        System.out.println("FeaturedEvents" +  page);
         return eventService.getFeatured(page);
     }
 
     @GetMapping("/nearby/{page}")
     public EventAllResponse<EventResponseDto> nearby (@PathVariable int page) {
+        System.out.println("NearbyEvents" +  page);
         return eventService.getNearby(page);
     }
 
     @GetMapping("/hosted/{page}")
     public EventAllResponse<EventResponseDto> hosted (@PathVariable int page, Authentication authentication) {
+        System.out.println("HostedEvents" +  page);
         return eventService.getHosted(authentication.getName(), page);
     }
 
     @GetMapping("/joined/{page}")
     public EventAllResponse<EventResponseDto> joined(@PathVariable int page, Authentication authentication) {
+        System.out.println("Joined Events" +  page);
         return eventService.getJoined(authentication.getName(),page);
     }
 
+    @GetMapping("/pending/{page}")
+    public EventAllResponse<EventResponseDto> pending(@PathVariable int page, Authentication authentication) {
+        System.out.println("Pending Events" +  page);
+        return eventService.getPending(authentication.getName(), page);
+    }
 
+    @GetMapping("/{eventId}")
+    public  EventResponseDto getEvent(@PathVariable Long eventId ) {
+        System.out.println("EventId" + eventId );
+        return  eventService.getEvent(eventId);
+    }
 
     
 

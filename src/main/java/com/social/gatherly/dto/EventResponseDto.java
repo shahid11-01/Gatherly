@@ -24,6 +24,7 @@ public class EventResponseDto {
     private int maxParticipants;
     private List<String> imageUrls;
     private long participantCount;
+    private String hostName;
 
    public static EventResponseDto from(Event event, String domain) {
 
@@ -43,6 +44,7 @@ public class EventResponseDto {
                .endDate(event.getEndDate())
                .category(event.getCategory())
                .imageUrls(imageUrls)
+               .hostName(event.getHost().getUserName())
                .participantCount(participantCount)
                .maxParticipants(event.getMaxParticipants())
                .build();

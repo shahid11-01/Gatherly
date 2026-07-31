@@ -6,6 +6,7 @@ import com.social.gatherly.Enum.ParticipantStatus;
 import com.social.gatherly.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EventParticipantRepository extends JpaRepository<EventParticipant, Long> {
@@ -24,4 +25,6 @@ public interface EventParticipantRepository extends JpaRepository<EventParticipa
     int countByEventEventIdAndStatus(Long eventId, ParticipantStatus participantStatus);
 
     long countByUserEmail(String email);
+
+    List<EventParticipant> findByEvent(Event event);
 }

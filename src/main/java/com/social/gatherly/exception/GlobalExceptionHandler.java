@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends RuntimeException {
     /**
      * 유저를 찾을 수 없는 경우
      */
@@ -35,6 +35,7 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 LocalDateTime.now()
         );
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
@@ -73,6 +74,7 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 LocalDateTime.now()
         );
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
@@ -84,6 +86,7 @@ public class GlobalExceptionHandler {
                 "Internal Server Error",
                 LocalDateTime.now()
         );
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
@@ -96,7 +99,7 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 LocalDateTime.now()
         );
-
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(response);
     }
@@ -110,6 +113,7 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 LocalDateTime.now()
         );
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(response);
     }
