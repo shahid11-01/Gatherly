@@ -89,7 +89,7 @@ public class EventService {
 
     }
 
-
+    @Transactional
     public void deleteEvent(Long eventId, String email) {
         Event event = eventRepository.findById(eventId)
                         .orElseThrow(() -> new EventNotFoundException("이벤트가 없습니다"));

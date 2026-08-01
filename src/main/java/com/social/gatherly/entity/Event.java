@@ -53,7 +53,7 @@ public class Event {
     @JoinColumn(name = "host_id", nullable = false)
     private Users host;
 
-    @OneToMany(mappedBy = "event")
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventParticipant> participants = new ArrayList<>();
 
 

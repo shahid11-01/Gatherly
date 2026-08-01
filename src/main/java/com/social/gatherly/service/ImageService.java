@@ -35,6 +35,7 @@ public class ImageService {
         }
 
         Path path = Paths.get(globalConfig.getImageDir(), String.valueOf(event.getEventId()), type.getType());
+        System.out.println("SAVING T0=" + path.toAbsolutePath());
         File fileDir = path.toFile();
         if(!fileDir.exists()) {
             fileDir.mkdirs();

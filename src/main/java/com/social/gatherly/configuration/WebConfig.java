@@ -26,6 +26,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         //C:Gatherly -> file:///C:Gatherly/
         String location = "file:///" + globalConfig.getImageDir().replace("\\", "/");
+        System.out.println("Image Serve Location" + location);
         registry.addResourceHandler("/images/**")
                 .addResourceLocations(location);
     }
