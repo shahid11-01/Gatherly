@@ -15,6 +15,7 @@ import com.social.gatherly.Enum.ImageType;
 import com.social.gatherly.exception.EventNotFoundException;
 import com.social.gatherly.exception.UserNotFoundException;
 import com.social.gatherly.repository.EventImageRepository;
+import com.social.gatherly.repository.EventParticipantRepository;
 import com.social.gatherly.repository.EventRepository;
 import com.social.gatherly.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class EventService {
     private final ImageService imageService;
     private final EventImageRepository eventImageRepository;
     private final GlobalConfig globalConfig;
+    private final EventParticipantRepository participantRepository;
 
 
     public Long createEvent(EventRequestDto eventRequestDto, String email) {
@@ -154,8 +156,6 @@ public class EventService {
             throw e;
         }
 
-
-
     }
 
     @Transactional(readOnly = true)
@@ -213,10 +213,14 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public EventResponseDto getEvent(Long eventId) {
+    public EventResponseDto getEvent(Long eventId, String email) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(()-> new EventNotFoundException("이벤트가 없습니다"));
-        return EventResponseDto.from((event), globalConfig.getDomain());
+        EventResponseDto dto = EventResponseDto.from(event, globalConfig.getDomain());
+        participantRepository.findByEventAndUserEmail(event, email)
+                .ifPresent(p -> dto.setMyStatus(p.getStatus().name()));
+
+        return dto;
     }
 
 

@@ -25,6 +25,6 @@ public interface EventParticipantRepository extends JpaRepository<EventParticipa
     int countByEventEventIdAndStatus(Long eventId, ParticipantStatus participantStatus);
 
     long countByUserEmail(String email);
-
+    Optional<EventParticipant> findByEventAndUserEmail(Event event, String email);
     List<EventParticipant> findByEvent(Event event);
 }

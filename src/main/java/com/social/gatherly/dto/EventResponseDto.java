@@ -25,6 +25,7 @@ public class EventResponseDto {
     private List<String> imageUrls;
     private long participantCount;
     private String hostName;
+    private String myStatus;
 
    public static EventResponseDto from(Event event, String domain) {
 

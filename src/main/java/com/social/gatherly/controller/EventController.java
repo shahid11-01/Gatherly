@@ -111,9 +111,9 @@ public class EventController {
     }
 
     @GetMapping("/{eventId}")
-    public  EventResponseDto getEvent(@PathVariable Long eventId ) {
+    public  EventResponseDto getEvent(@PathVariable Long eventId, Authentication authentication ) {
         System.out.println("EventId" + eventId );
-        return  eventService.getEvent(eventId);
+        return  eventService.getEvent(eventId, authentication.getName());
     }
 
     
