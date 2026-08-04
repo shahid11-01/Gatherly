@@ -29,6 +29,8 @@ public interface EventRepository extends JpaRepository<Event, Long > {
 
 
 
+
+
     //참여한 이벤트
     @Query(
             value = "SELECT p.event FROM EventParticipant p WHERE p.user.email = :email AND p.status = :status",
@@ -37,4 +39,6 @@ public interface EventRepository extends JpaRepository<Event, Long > {
     Page<Event> findJoinedByEmail(@Param("email") String email,
                                   @Param("status") ParticipantStatus status,
                                   Pageable pageable);
+
+   Page<Event> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 }

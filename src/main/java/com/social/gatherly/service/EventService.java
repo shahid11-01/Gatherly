@@ -28,11 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -99,6 +96,15 @@ public class EventService {
             throw new IllegalArgumentException("권한 없습니다");
         }
         eventRepository.deleteById(eventId);
+    }
+
+    @Transactional(readOnly = true)
+    public EventAllResponse<EventResponseDto> searchEvent(String eventTitle, int page) {
+        Page<Event> events = eventRepository.findByTitleContainingIgnoreCase(
+                eventTitle, PageRequest.of(page, 10));
+
+        return toResponse(events);
+
     }
 
     @Transactional

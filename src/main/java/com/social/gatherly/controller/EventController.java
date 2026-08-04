@@ -116,6 +116,12 @@ public class EventController {
         return  eventService.getEvent(eventId, authentication.getName());
     }
 
+    @GetMapping("/search/{page}")
+    public EventAllResponse<EventResponseDto> search(@PathVariable int page,
+                                                     @RequestParam String title) {
+        return eventService.searchEvent(title, page);
+    }
+
     
 
 

@@ -37,6 +37,9 @@ public class Users {
     @Column(name="created_at", columnDefinition = "DATETIME", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Provider provider;

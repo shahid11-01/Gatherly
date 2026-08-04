@@ -4,6 +4,7 @@ package com.social.gatherly.service;
 import com.social.gatherly.configuration.GlobalConfig;
 import com.social.gatherly.entity.Event;
 import com.social.gatherly.Enum.ImageType;
+import com.social.gatherly.entity.Users;
 import com.social.gatherly.repository.EventImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -63,6 +65,18 @@ public class ImageService {
         }
         return filePathList;
 
+    }
+
+    public String uploadUserImage(Users user, MultipartFile image) throws IOException {
+        if(image.getContentType() == null || !image.getContentType().startsWith("image/")) {
+            throw new IOException("존재하지 않은 이미지 타입입니다");
+        }
+        Path dir = Paths.get(globalConfig.getImageDir(), "user", String.valueOf(user.getUserId()));
+        Files.createDirectories(dir);
+        String uuid = UUID.randomUUID().toString();
+        String savedName = uuid + "_" + image.getOriginalFilename();
+        image.transferTo(dir.resolve(savedName).toFile());
+        return "/image/user/" + user.getUserId() + "/" + savedName;
     }
 
 }

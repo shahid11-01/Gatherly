@@ -1,6 +1,7 @@
 package com.social.gatherly.service;
 
 
+import com.social.gatherly.configuration.GlobalConfig;
 import com.social.gatherly.configuration.JwtTokenProvider;
 import com.social.gatherly.dto.*;
 import com.social.gatherly.entity.Users;
@@ -9,6 +10,7 @@ import com.social.gatherly.Enum.Role;
 import com.social.gatherly.exception.DuplicateEmailException;
 import com.social.gatherly.exception.UserNotFoundException;
 import com.social.gatherly.repository.UsersRepository;
+import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -31,6 +34,8 @@ public class UserService {
     private final UserAuthService userAuthService;
     private final RefreshTokenService refreshTokenService;
     private final TokenService tokenService;
+    private final ImageService imageService;
+    private final GlobalConfig globalConfig;
 
     public void signUp(SignUpRequestDto signUpRequestDto) {
         if( usersRepository.findByEmail(signUpRequestDto.getEmail()).isPresent()) {
@@ -52,19 +57,23 @@ public class UserService {
     public void updateUser(UpdateUserRequest updateUserRequest, String email) {
         Users user = usersRepository.findByEmail(email).orElseThrow(()
                 -> new UserNotFoundException("유저가 없습니다"));
+        user.setUserName(updateUserRequest.getUserName());
+        user.setUserPhone(updateUserRequest.getUserPhone());
 
         if(!user.getProvider().equals(Provider.LOCAL)) {
             throw new RuntimeException("로컬 계정만 요청 가능합니다");
         }
-        //이메일 중복 체크
-        if(!user.getEmail().equals(updateUserRequest.getEmail())
-            && usersRepository.existsByEmail(updateUserRequest.getEmail())) {
-            throw new DuplicateEmailException("이미 사용중인 이메일입니다");
-
+        //로칼 유저남 변경 가능
+        if(updateUserRequest.getEmail() != null && !user.getEmail().equals(updateUserRequest.getEmail())) {
+            if(!user.getProvider().equals(Provider.LOCAL)) {
+                throw new RuntimeException("소셜 계정은 이메일을 변경할 수 없습니다");
+            }
+            if(usersRepository.existsByEmail(updateUserRequest.getEmail())) {
+                throw  new DuplicateEmailException("이미 사용중인 이메일입니다");
+            }
+            user.setEmail(updateUserRequest.getEmail());
         }
-        user.setUserName(updateUserRequest.getUserName());
-        user.setUserPhone(updateUserRequest.getUserPhone());
-        user.setEmail(updateUserRequest.getEmail());
+
         usersRepository.save(user);
     }
 
@@ -111,12 +120,8 @@ public class UserService {
         Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new RuntimeException("유저가 없습니다"));
-
-        return UserResponseDto.builder()
-                .userId(user.getUserId())
-                .userName(user.getUserName())
-                .email(user.getEmail())
-                .build();
+        System.out.println("UserResponseDto" + user);
+        return UserResponseDto.from( user, globalConfig.getDomain());
     }
 
 
@@ -135,5 +140,15 @@ public class UserService {
                 authentication.getName(),
                 "Login successful"
         );
+    }
+
+    @Transactional
+    public String updateProfileImage(String email, MultipartFile image) throws IOException, java.io.IOException {
+        Users user = usersRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("유저가 없습니다"));
+        String url = imageService.uploadUserImage(user, image);
+        user.setProfileImageUrl(url);
+        usersRepository.save(user);
+        return globalConfig.getImageDir() + url;
     }
 }

@@ -4,10 +4,7 @@ package com.social.gatherly.controller;
 import com.social.gatherly.configuration.JwtTokenProvider;
 import com.social.gatherly.dto.*;
 import com.social.gatherly.entity.Users;
-import com.social.gatherly.service.RefreshTokenService;
-import com.social.gatherly.service.TokenService;
-import com.social.gatherly.service.UserAuthService;
-import com.social.gatherly.service.UserService;
+import com.social.gatherly.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -16,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,6 +28,7 @@ public class AuthController {
     private final TokenService tokenService;
     private final RefreshTokenService refreshTokenService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EventService eventService;
 
     @PostMapping("/signup")
     public ResponseEntity<String> register(@RequestBody SignUpRequestDto register) {
@@ -52,7 +53,7 @@ public class AuthController {
 
     }
 
-    @PatchMapping("/change-password")
+    @PostMapping("/changePassword")
     public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
                                                 Authentication authentication
 
@@ -90,6 +91,13 @@ public class AuthController {
         return ResponseEntity.ok(userService.getCurrentUser(email));
     }
 
+
+
+    @PostMapping("/user/me/image")
+    public ResponseEntity<String> uploadProfileImage(@RequestParam("image") MultipartFile image,
+                                                     Authentication authentication) throws IOException {
+        return ResponseEntity.ok(userService.updateProfileImage(authentication.getName(), image));
+    }
 
 
 
